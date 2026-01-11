@@ -1,3 +1,16 @@
+# Team 3606 | Bear Metal
+## Season 2026
+
+From Baton Rouge Louisiana, Bear Metal has been competiting in FRC since 2011.
+Original code forked from Knoxville, Tennessee's Team 2393 from [Knoxville Catholic High School](https://knoxvillecatholic.com)
+
+## Programming Agenda
+### Week of 1/11/2026
+- Brain Storm ideas for this years game and place in simulation
+- Setup laptops
+- Stay Up-to-date (git pull EVERY SESSION)
+- Have fun and learn
+
 Team 2393 FRC Season 2026
 =========================
 
