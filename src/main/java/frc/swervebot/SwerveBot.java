@@ -4,6 +4,7 @@
 package frc.swervebot;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
@@ -39,8 +40,6 @@ public class SwerveBot extends CommandRobotBase
   private final SwervebotDrivetrain drivetrain = new SwervebotDrivetrain();
   private final Command relswerve = new RelativeSwerveCommand(drivetrain);
   private final Command absswerve = new AbsoluteSwerveCommand(drivetrain);
-
-  private final Camera2D camera = new Camera2D();
 
   private final LEDRing ring = new LEDRing();
 
@@ -83,6 +82,15 @@ public class SwerveBot extends CommandRobotBase
 
     SwerveToPositionCommand.MAX_SPEED = SwerveToPositionCommand.ACCEL = 1.0;
 
+    if (RobotBase.isSimulation())
+    {
+      SwerveOI.MAX_METERS_PER_SEC = SwerveDrivetrain.MAX_METERS_PER_SEC = 3.0;
+      SwerveOI.MAX_ROTATION_DEG_PER_SEC = SwerveDrivetrain.MAX_ROTATION_DEG_PER_SEC = 360;
+      SwerveOI.forward_slew = new SlewRateLimiter(6.0);
+      SwerveOI.side_slew = new SlewRateLimiter(6.0);
+      SwerveOI.rotation_slew = new SlewRateLimiter(180);
+    }
+
     SwerveOI.reset();
 
     ring.setDefaultCommand(
@@ -101,7 +109,7 @@ public class SwerveBot extends CommandRobotBase
       autos.addOption(auto.getName(), auto);
     SmartDashboard.putData(autos);
 
-    SwerveOI.joystick.y().whileTrue(new RotateToTarget(camera, drivetrain));
+    SwerveOI.joystick.y().whileTrue(new RotateToTarget(drivetrain));
   }
 
   @Override

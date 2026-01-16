@@ -4,35 +4,57 @@
 
 package frc.swervebot;
 
+import org.photonvision.PhotonCamera;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 
-/** Command for rotating to target */
+/** Command for rotating to target using 2D info from camera */
 public class RotateToTarget extends Command
 {
-    private final Camera2D camera;
+    private final PhotonCamera camera = new PhotonCamera("HD_Pro_Webcam_C920");
     private final SwervebotDrivetrain drivetrain;
     private final PIDController pid = new PIDController(2.0, 1.0, 0);
-        
-    public RotateToTarget(Camera2D camera, SwervebotDrivetrain drivetrain)
+    private final Timer timeout = new Timer();
+
+    public RotateToTarget(SwervebotDrivetrain drivetrain)
     {
-        this.camera = camera;
         this.drivetrain = drivetrain;
         addRequirements(drivetrain);
 
         SmartDashboard.putData("rotate_to_target", pid);
     }
-    
+
     @Override
     public void execute()
     {
-        double target_angle = camera.getAngleToTarget();
+        double target_angle = Double.NaN;
+        for (var result : camera.getAllUnreadResults())
+            if (result.hasTargets())
+                for (var target : result.getTargets())
+                {
+                    // Check target ID, use only 'centered' targets
+                    int id = target.getFiducialId();
+                    if (id != 4)
+                        continue;
+                    // XXX Also use target.getArea() to estimate distance?
+                    target_angle = target.getYaw();
+                    // System.out.println("Tag " + target.getFiducialId() + ": yaw " + target_angle);
+                    timeout.stop();
+                    break;
+                }
+
         if (Double.isNaN(target_angle))
         {
-            drivetrain.stop();
-            System.out.println("No camera reading!");
+            // No useful camera reading. Keep going with last 'drive',
+            // but time out and then stop if there's no updates
+            if (!timeout.isRunning())
+                timeout.start();
+            else if (timeout.hasElapsed(1.0))
+                drivetrain.stop();
             return;
         }
 
