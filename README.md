@@ -5,11 +5,21 @@ From Baton Rouge Louisiana, Bear Metal has been competiting in FRC since 2011.
 Original code forked from Knoxville, Tennessee's Team 2393 from [Knoxville Catholic High School](https://knoxvillecatholic.com)
 
 ## Programming Agenda
+
+### Week of 1/20/2026
+- Stay up to date (see update instructions below!!)
+
 ### Week of 1/11/2026
 - Brain Storm ideas for this years game and place in simulation
-- Setup laptops
+- ~~Setup laptops~~
 - Stay Up-to-date (git pull EVERY SESSION)
 - Have fun and learn
+
+### Update code
+- In terminal run (once only!!)
+  `git remote add origin https://github.com/chs3606/FRC2026`
+  then
+  `git pull origin main`
 
 Team 2393 FRC Season 2026
 =========================
