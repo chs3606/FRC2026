@@ -3,13 +3,15 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
 
-// import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.swervelib.SwerveDrivetrain;
 
@@ -20,28 +22,39 @@ import frc.swervelib.SwerveDrivetrain;
  */
 public class AimToHub extends Command
 {
-    // TODO Update with actual hub positions
-    private static final Translation2d BLUE_HUB = new Translation2d(4.49, 4.041);
-    private static final Translation2d RED_HUB = new Translation2d(13.04, 4.041);
-
+    private final Translation2d BLUE_HUB;
+    private final Translation2d RED_HUB;
     private final SwerveDrivetrain drivetrain;
+    private final NetworkTableEntry nt_distance = SmartDashboard.getEntry("HubDistance");
+    private final ProfiledPIDController pid = new ProfiledPIDController(5, 1, 0,
+                                                    new TrapezoidProfile.Constraints(3*360, 3*360));
     private Translation2d hub = null;
-    private double angle_error = 0.0;
 
-    public AimToHub(SwerveDrivetrain drivetrain)
+    public AimToHub(AprilTagFieldLayout tags, SwerveDrivetrain drivetrain)
     {
         this.drivetrain = drivetrain;
         addRequirements(drivetrain);
 
-        // // Center of blue hub is between tags 19 and 25, red 9 and 3
-        // AprilTagFieldLayout tags = null;
-        // var a = tags.getTagPose(19).get().getTranslation();
-        // var b = tags.getTagPose(25).get().getTranslation();
-        // BLUE_HUB = a.interpolate(b, 0.5).toTranslation2d();
+        // Center of blue, red hub is between tags ... and ...
+        // ID,X,Y,Z,Z-Rotation,X-Rotation
+        // 20,205.873,158.844,44.25,  0,0
+        // 26,158.341,158.844,44.25,180,0
+        var a = tags.getTagPose(20).get().getTranslation();
+        var b = tags.getTagPose(26).get().getTranslation();
+        BLUE_HUB = a.interpolate(b, 0.5).toTranslation2d();
 
-        // a = tags.getTagPose(19).get().getTranslation();
-        // b = tags.getTagPose(25).get().getTranslation();
-        // RED_HUB = a.interpolate(b, 0.5).toTranslation2d();
+        // ID,X,Y,Z,Z-Rotation,X-Rotation
+        //  4,445.349,158.844,44.25,180,0
+        // 10,492.881,158.844,44.25,  0,0
+        a = tags.getTagPose(4).get().getTranslation();
+        b = tags.getTagPose(10).get().getTranslation();
+        RED_HUB = a.interpolate(b, 0.5).toTranslation2d();
+
+        // Use PID with -180..180 degrees, enable I below 2 deg error, done when within 1 deg
+        pid.enableContinuousInput(-180, 180);
+        pid.setIZone(2.0);
+        pid.setTolerance(1.0);
+        // SmartDashboard.putData("AimToHubPID", pid);
     }
 
     @Override
@@ -52,6 +65,9 @@ public class AimToHub extends Command
             hub = RED_HUB;
         else
             hub = BLUE_HUB;
+
+        // Profiled PID needs to start with current measurement (robot heading)
+        pid.reset(drivetrain.getPose().getRotation().getDegrees());
     }
 
     @Override
@@ -60,25 +76,25 @@ public class AimToHub extends Command
         // Where are we?
         Pose2d robot_pose = drivetrain.getPose();
 
-        // Direction from there to hub
+        // Direction from where we are to hub
         Translation2d direction = hub.minus(robot_pose.getTranslation());
-        Rotation2d angle = direction.getAngle();
-        // double distance = direction.getNorm();
+        double angle = direction.getAngle().getDegrees();
+        double distance = direction.getNorm();
 
-        // Proportional control of robot heading with limit
-        angle_error = angle.minus(robot_pose.getRotation()).getDegrees();
-        // System.out.println("Direction " + direction + ", angle " + angle + ", error " + angle_error);
-        double vr = 6.0 * angle_error;
-        vr = MathUtil.clamp(vr, -180, +180);
+        double vr = pid.calculate(robot_pose.getRotation().getDegrees(), angle);
+        // System.out.println("Heading: " + robot_pose.getRotation().getDegrees() +
+        //                    " Goal: "+angle +
+        //                    " rot: " + vr);
         drivetrain.swerve(0, 0, Math.toRadians(vr));
 
-        // XXX Could use distance to control spinner speed
+        // XXX Set spinner speed, hood angle, .. based on distance using LookupTable
+        nt_distance.setDouble(distance);
     }
 
     @Override
     public boolean isFinished()
     {
         // We're done once the error is small enough
-        return Math.abs(angle_error) < 1.0;
+        return pid.atGoal();
     }
 }

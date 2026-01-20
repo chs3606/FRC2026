@@ -49,16 +49,21 @@ Timeline
  * Setup roboRIO with current firmware
  * Setup own laptops with current tools
  * Configure radio for 2.4 GHz usage with laptop:
-   - Connect via DS port and see http://radio.local
+   - Connect via DS port and see http://radio.local or http://192.168.69.1
    - Upgrade firmware https://frc-radio.vivid-hosting.net/overview/upgrading-firmware
-   - Configure SSID and 2.4 GHz password, enable 2.4 GHz wifi via DIP #3
+   - Configure Robot Radio mode, team number, SSID and 2.4 GHz password, enable 2.4 GHz wifi via DIP #3
    - Check other DIPs to disable power-over-ethernet which could destroy vision processors
  * Tune swerve drivetrain
+ * Find camera (limelight 2, maybe later Pi)
+ * Jan. 16: Use camera to rotate on target and estimate distance (2D, RotateToTarget).
+   Works OK as long as stream resolution is small.
+ * Jan. 17: Calibrate camera, use to locate robot on field.
+   Mostly works, but X distance off by 10 or 20 cm.
+   Mean error 0.27px, FOV 71.2, 56.0, 83.0.
+   Calibrated again, and X distance appears good to 1..2 cm!
+   Mean error 0.34px, FOV 62.57, 48.92, 74.40.
+ * Rotate onto nearest target using that information
  * Find team/drive laptop, set up
- * Find camera (limelight, maybe later Pi)
- * Use camera to rotate on target and estimate distance (2D)
- * Calibrate camera, use to locate robot on field,
-   then rotate onto nearest target using that information
  * Gamepiece handling
 
  * March 18 - 21: Smoky Mountains Regional
@@ -82,13 +87,16 @@ See https://docs.photonvision.org/en/latest/docs/quick-start/index.html
  * Connect Pi to robot network
  * Access from laptop as http://photonvision.local:5800
  * Under "Settings", set Team Number to 2393
- * Change IP Assignment Mode from DHCP to Static, set address to `10.23.93.12`.
+ * Change IP Assignment Mode from DHCP to Static,
+   set address to `10.23.93.12` and cameran name to `Front`
+   respectively   `10.23.93.13` and `Back`.
    (Static `10.TE.AM.6-19` are general purpose.
     `10.TE.AM.11` is also often used for camera, leave that for Limelight)
- * Leave "Hostname" as `photonvision`
+ * Leave "Hostname" as `photonvision` for Front,
+   change to `photonvision2` for Back camera
  * Press SAVE, restart Pi
 
-From now on, access photonvision via http://10.23.93.12:5800
+From now on, access photonvision via http://10.23.93.12:5800 !
 
  * Setup a camera for first test:
    * "activate" detected USB camera

@@ -24,8 +24,11 @@ public final class Main
                                                                                             //  frc.robot.RobotMap.FRONT_LEFT_ANGLE,
                                                                                             //  0.0)));
 
+      // RobotBase.startRobot(frc.demo.DigitalFilterDemoRobot::new);
       // RobotBase.startRobot(frc.robot.SpinnerTestRobot::new);
+      // RobotBase.startRobot(frc.robot.IntakeTestRobot::new);
       // RobotBase.startRobot(frc.robot.FuelHandlerTestRobot::new);
+      // RobotBase.startRobot(frc.robot.HoodDemoRobot::new);
 
       RobotBase.startRobot(frc.robot.Robot::new);
   }
