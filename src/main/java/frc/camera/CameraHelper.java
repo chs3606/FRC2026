@@ -11,12 +11,14 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.swervelib.SwerveDrivetrain;
 
@@ -26,8 +28,10 @@ public class CameraHelper
     private final AprilTagFieldLayout tags;
     private final PhotonCamera camera;
     private final Transform3d robotToCam;
-    private final NetworkTableEntry nt_camera, nt_distance;
+    private final NetworkTableEntry nt_camera, nt_info, nt_distance, nt_tag_period;
+    private final Timer tagTimer = new Timer();
     private int successes = 0;
+    private double avg_tag_period = 0.02;
 
     /** @param tags Field info
      *  @param camera_name Camera name ("Front", "Back") in photonvision network tablee ntries
@@ -47,9 +51,11 @@ public class CameraHelper
         camera = new PhotonCamera(camera_name);
 
         nt_camera = SmartDashboard.getEntry(camera_name + "Camera");
+        nt_info = SmartDashboard.getEntry(camera_name + "Info");
         nt_distance = SmartDashboard.getEntry(camera_name + "Dist");
+        nt_tag_period = SmartDashboard.getEntry(camera_name + "TagPeriod");
 
-        // TODO: Allow access to the camera from a computer when tethered to the USB port on the roboRIO
+        // XXX Allow access to the camera from a computer when tethered to the USB port on the roboRIO
         // PortForwarder.add(5800, "photonvision.local", 5800);
 
         // Where is the camera mounted relative to the center of the robot?
@@ -73,39 +79,83 @@ public class CameraHelper
             return;
         }
 
+        boolean sawTarget = false;
         for (PhotonPipelineResult result : camera.getAllUnreadResults())
             if (result.hasTargets())
                 for (PhotonTrackedTarget target : result.getTargets())
                 {
-                    // Traget too far away?
+                    sawTarget = true;
+                    // Target too far away?
                     double distance = target.bestCameraToTarget.getTranslation().getNorm();
                     nt_distance.setNumber(distance);
-                    if (distance > 2.5)
+                    if (distance > 3.5)
                     {
                         // System.out.println("No best target");
                         continue;
                     }
+                    if (target.poseAmbiguity > 0.6)
+                        continue;
+
+                    // TODO Vary stddev with distance etc, see
+                    // https://www.chiefdelphi.com/t/global-pose-with-ll/513848
+                    double fuzzyness = 1.0;
+                    // if (distance > 1)
+                    //     fuzzyness = distance;
+                    // Check drive speed?
 
                     // Where is that tag on the field?
                     Optional<Pose3d> tag_pose = tags.getTagPose(target.fiducialId);
                     if (tag_pose.isEmpty())
                         continue;
 
-                    // System.out.println(target.bestCameraToTarget);
-                    // Transform from tag to camera, then from camera to center of robot
                     Pose3d pose = tag_pose.get();
-                    pose = pose.transformBy(target.bestCameraToTarget.inverse());
+
+                    // TESTING...
+                    // pose = new Pose3d();
+
+                    // Transform from tag to camera...
+                    Transform3d target_to_camera = target.bestCameraToTarget.inverse();
+                    String info = String.format("#%02d to cam: %5.2f %5.2f %5.2f  < %5.1f %5.1f %5.1f",
+                                                target.fiducialId,
+                                                target_to_camera.getX(), target_to_camera.getY(), target_to_camera.getZ(),
+                                                Math.toDegrees(target_to_camera.getRotation().getX()),
+                                                Math.toDegrees(target_to_camera.getRotation().getY()),
+                                                Math.toDegrees(target_to_camera.getRotation().getZ()));
+                    nt_info.setString(info);
+                    pose = pose.transformBy(target_to_camera);
+
+                    // ... then from camera to center of robot
                     pose = pose.transformBy(robotToCam.inverse());
+
+                    // TODO Check for sensible robot height
+                    // if (! MathUtil.isNear(0.5, pose.getZ(), 1.0))
+                    //     continue;
+
+                    // Map from 3D down to 2D
                     Pose2d position = pose.toPose2d();
                     // System.out.println(target.getFiducialId() + " @ " + tag_pose + " -> " + position);
+
+                    // TODO Filter on coords inside field
+                    // TODO Filter on heading close to gyro
 
                     // For tests, force odometry to camera reading
                     // drivetrain.setOdometry(position.getX(), position.getY(), position.getRotation().getDegrees());
 
                     // For operation, smoothly update location with camera info
-                    drivetrain.updateLocationFromCamera(position, result.getTimestampSeconds());
+                    drivetrain.updateLocationFromCamera(position, result.getTimestampSeconds(), fuzzyness);
                     successes = 50; // 1 second
                 }
         nt_camera.setBoolean(successes > 0);
+        if (sawTarget)
+        {
+            double tag_period = tagTimer.get();
+            tagTimer.restart();
+            // Exponential smoothing, 90:10%
+            avg_tag_period = 0.9 * avg_tag_period  +  0.1 * tag_period;
+            if (avg_tag_period == 0)
+                nt_tag_period.setDouble(0);
+            else
+                nt_tag_period.setDouble(1.0/avg_tag_period);
+        }
     }
 }

@@ -3,9 +3,6 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
 
-import com.ctre.phoenix6.hardware.TalonFX;
-
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.tools.CommandRobotBase;
@@ -20,6 +17,12 @@ public class IntakeTestRobot extends CommandRobotBase
     {
         power_dist.clearStickyFaults();
         SmartDashboard.putData("Power", power_dist);
+    }
+
+    @Override
+    public void teleopPeriodic()
+    {
+        intake.open(RobotOI.joystick.a().getAsBoolean());
     }
 
     @Override

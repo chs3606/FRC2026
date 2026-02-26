@@ -8,7 +8,9 @@ import java.util.List;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.constraint.SwerveDriveKinematicsConstraint;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -18,7 +20,10 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
 import frc.tools.AutoTools;
 import frc.tools.CommandRobotBase;
 import frc.camera.CameraHelper;
+import frc.swervelib.AbsoluteSwerveCommand;
 import frc.swervelib.RelativeSwerveCommand;
+import frc.swervelib.ResetHeadingCommand;
+import frc.swervelib.SwerveDrivetrain;
 
 /** FRC2026 robot */
 public class Robot extends CommandRobotBase
@@ -33,8 +38,13 @@ public class Robot extends CommandRobotBase
     private final PowerDistribution power_dist = new PowerDistribution();
 
     /** Drivetrain and related commands */
-    private final RobotDrivetrain drivetrain = new RobotDrivetrain();
+    private final SwerveDrivetrain drivetrain = RobotMap.is_practice_chassis
+                                              ? new PracticeDrivetrain()
+                                              : new RobotDrivetrain();
+    // private final SwerveDrivetrain drivetrain = new PracticeDrivetrain();
+    private final Command reset_heading = new ResetHeadingCommand(drivetrain);
     private final Command joydrive = new RelativeSwerveCommand(drivetrain);
+    private final Command absdrive = new AbsoluteSwerveCommand(drivetrain);
     private final Command aim = new AimToHub(tags, drivetrain);
     // private final Command aim = new RotateToTarget("Front", drivetrain);
 
@@ -45,9 +55,9 @@ public class Robot extends CommandRobotBase
     /** Handle cameras */
     private final List<CameraHelper> cameras = List.of(
         new CameraHelper(tags, "Front",
-                         0.34, -0.1, 0.16,
+                         0.33, -0.09, 0.16,
                         0.0,
-                        -10.0),
+                        -34.0),
         new CameraHelper(tags, "Back",
                         -0.34, -0.07, 0.16,
                         180.0,
@@ -58,16 +68,23 @@ public class Robot extends CommandRobotBase
 
     public Robot()
     {
+        System.out.println("** RIO serial " + RobotController.getSerialNumber());
+        System.out.println("** on " + drivetrain.getClass().getName());
+        System.out.println("************************************");
+
         // Configure speeds
         // Robot needs >1m/s to run over the bump
+        // Max speed used in teleop
         RobotOI.MAX_METERS_PER_SEC = 2.0;
         RobotOI.MAX_ROTATION_DEG_PER_SEC = 180.0;
-        AutoTools.config = new TrajectoryConfig(1.5, 1.0);
-        // AutoTools.config = new TrajectoryConfig(2.5, 1.5);
+        // Max speed used in auto
+        AutoTools.config = new TrajectoryConfig(2.5, 2.0);
+        AutoTools.config.addConstraint(new SwerveDriveKinematicsConstraint(drivetrain.getKinematics(),
+                                                                           SwerveDrivetrain.MAX_METERS_PER_SEC));
 
         // Bind controller buttons
-        RobotOI.joystick.x().whileTrue(aim);
-        // RobotOI.joystick.a().onTrue(fuel_handler.take_in());
+        RobotOI.joystick.x().whileTrue(aim.repeatedly());
+        // RobotOI.joystick.a().onTrue(fuel_handler.toggleIntake());
         // RobotOI.joystick.y().onTrue(fuel_handler.shoot());
         // Helper for creating auto paths: Print X, Y, Heading on button press
         RobotOI.joystick.b().onTrue(new InstantCommand(() ->
@@ -82,7 +99,17 @@ public class Robot extends CommandRobotBase
 
         RobotOI.joystick.a().whileTrue(new InstantCommand(() -> intake.open(true)));
         RobotOI.joystick.a().whileFalse(new InstantCommand(() -> intake.open(false)));
-
+        RobotOI.joystick.leftBumper().onTrue(new InstantCommand(()->
+        {
+            drivetrain.setDefaultCommand(joydrive);
+            CommandScheduler.getInstance().schedule(joydrive);
+        }));
+        RobotOI.joystick.rightBumper().onTrue(new InstantCommand(()->
+        {
+            drivetrain.setDefaultCommand(absdrive);
+            CommandScheduler.getInstance().schedule(absdrive);
+        }));
+        SmartDashboard.putData("Reset", reset_heading);
         // By default, drive, and allow bound buttons to select other modes
         drivetrain.setDefaultCommand(joydrive);
 
@@ -90,9 +117,10 @@ public class Robot extends CommandRobotBase
         power_dist.clearStickyFaults();
         SmartDashboard.putData("Power", power_dist);
 
+        // Auto options
         autos.setDefaultOption("Nothing", new PrintCommand("Do nothing"));
         for (Command auto : AutoNoMouse.createAutoCommands(tags, drivetrain))
-             autos.addOption(auto.getName(), auto);
+            autos.addOption(auto.getName(), auto);
         SmartDashboard.putData(autos);
     }
 

@@ -22,9 +22,9 @@ import frc.tools.KeepOnFilter;
  *
  *  Basic idea:
  *
- *  Intake    Storage          Spinner
- *  O O O O   O O O O O O O O
- *  --->--->  --->--->--->--S  >>>>>>>>
+ *  Intake    Storage          Feeder Spinner
+ *  O O O O   O O O O O O O O O O O O
+ *  --->--->  --->--->--->--->--->--S  >>>>>>>>
  *
  *  Intake can open/close.
  *  Intake and storage have motors for grabber wheels or belt
@@ -43,20 +43,28 @@ import frc.tools.KeepOnFilter;
 public class FuelHandler extends SubsystemBase
 {
     private final Intake intake = new Intake();
-    private final TalonFX storage_mover = MotorHelper.createTalonFX(RobotMap.STOREAGE_MOVER, false, true, 0.3);
-    private final DigitalInput storage_sensor = new DigitalInput(RobotMap.STORAGE_SENSOR);
-    private final KeepOnFilter keep_storarge = new KeepOnFilter(1.0);
+    // At 5V, mechanism uses ~20 amp. With balls, it runs up to ~30
+    private final TalonFX storage_mover = MotorHelper.createTalonFX(RobotMap.STOREAGE_MOVER, false, true, 0, 30.0);
+    private final TalonFX feeder = MotorHelper.createTalonFX(RobotMap.FEEDER, false, true, 0, 30.0);
+    private final DigitalInput feeder_sensor = new DigitalInput(RobotMap.FEEDER_SENSOR);
+    private final KeepOnFilter keep_feeder = new KeepOnFilter(1.0);
     private final Spinner spinner = new Spinner();
-    private final NetworkTableEntry nt_belt_voltage = SmartDashboard.getEntry("BeltVoltage");
-    private final NetworkTableEntry nt_storage_full = SmartDashboard.getEntry("StorageFull");
+    private final NetworkTableEntry nt_storage_voltage = SmartDashboard.getEntry("StorageVoltage");
+    private final NetworkTableEntry nt_feeder_voltage = SmartDashboard.getEntry("FeederVoltage");
+    private final NetworkTableEntry nt_feeder_full = SmartDashboard.getEntry("FeederFull");
     private final NetworkTableEntry nt_always_spin  = SmartDashboard.getEntry("AlwaysSpin");
 
     enum States
     {
         /** All motors off, intake closed */
         Idle,
-        /** Open intake, move intake & storage until storage is full */
+        /** Open intake, move storage and feeder until game piece in feeder */
         TakeIn,
+
+        // TODO New state: Store?
+        // Intake closed; move storage to push game pieces up to feeder;
+        // run feeder until game piece in feeder
+
         /** Close intake, run spinner up to speed */
         PrepShooting,
         /** Shoot until storage is empty */
@@ -68,15 +76,16 @@ public class FuelHandler extends SubsystemBase
     private final Debouncer after_shot_delay = new Debouncer(1.0);
 
     /** Visualization */
-    private final static Color8Bit BELT_OFF = new Color8Bit(100, 100, 0);
-    private final static Color8Bit BELT_ON = new Color8Bit(255, 255, 0);
+    private final static Color8Bit MOVE_OFF = new Color8Bit(100, 100, 0);
+    private final static Color8Bit MOVE_ON = new Color8Bit(255, 255, 0);
     private final static Color8Bit SPINNER_OFF = new Color8Bit(100, 0, 0);
     private final static Color8Bit SPINNER_ON = new Color8Bit(255, 0, 0);
     private final MechanismLigament2d vis_intake, vis_storage, vis_shooter;
 
     public FuelHandler()
     {
-        nt_belt_voltage.setDefaultDouble(3.0);
+        nt_storage_voltage.setDefaultDouble(5.0);
+        nt_feeder_voltage.setDefaultDouble(5.0);
         nt_always_spin.setDefaultBoolean(false);
 
         // Visualization
@@ -85,8 +94,8 @@ public class FuelHandler extends SubsystemBase
         mech.getRoot("left", 0, 0.2).append(new MechanismLigament2d("base", 0.8, 0, 10, new Color8Bit(100, 100, 100)));
 
         MechanismRoot2d right = mech.getRoot("right", 0.8, 0.2);
-        right.append(vis_intake  = new MechanismLigament2d("intake",  0.2,  90, 10, BELT_OFF));
-        right.append(vis_storage = new MechanismLigament2d("storage", 0.6, 170, 10, BELT_OFF));
+        right.append(vis_intake  = new MechanismLigament2d("intake",  0.2,  90, 10, MOVE_OFF));
+        right.append(vis_storage = new MechanismLigament2d("storage", 0.6, 170, 10, MOVE_OFF));
 
         vis_storage.append(vis_shooter = new MechanismLigament2d("shooter", 0.2, -70, 10, SPINNER_OFF));
 
@@ -94,9 +103,27 @@ public class FuelHandler extends SubsystemBase
     }
 
     /** @return Command that starts taking game pieces in */
-    public Command take_in()
+    public Command openIntake()
     {
         return new InstantCommand(() -> state = States.TakeIn);
+    }
+
+    /** @return Command that closes the intake */
+    public Command closeIntake()
+    {
+        return new InstantCommand(() -> state = States.Idle);
+    }
+
+    /** @return Command that toggles take in, idle */
+    public Command toggleIntake()
+    {
+        return new InstantCommand(() ->
+        {
+            if (state == States.TakeIn)
+                state = States.Idle;
+            else
+                state = States.TakeIn;
+        });
     }
 
     /** @return Command that starts shooting */
@@ -112,10 +139,10 @@ public class FuelHandler extends SubsystemBase
         boolean run_storage = false;
         boolean run_spinner = false;
         // As we push balls out, gaps between balls suggest
-        // there's nothing in storage, so if we detect a ball,
-        // keep 'storage_full' on for a little longer
-        boolean storage_full = keep_storarge.calculate(storage_sensor.get());
-        nt_storage_full.setBoolean(storage_full);
+        // there's nothing in feeder, so if we detect a ball,
+        // keep 'feeder_full' on for a little longer
+        boolean feeder_full = keep_feeder.calculate(feeder_sensor.get());
+        nt_feeder_full.setBoolean(feeder_full);
 
         if (state == States.Idle)
         {
@@ -123,10 +150,17 @@ public class FuelHandler extends SubsystemBase
         }
         else if (state == States.TakeIn)
         {
-            run_intake = true;
-            run_storage = true;
-            if (storage_full)
+            if (feeder_full)
+            {
                 state = States.Idle;
+                // and leave run_.. = false
+                // so we're effectively idle right now
+            }
+            else
+            {
+                run_intake = true;
+                run_storage = true;
+            }
         }
         else if (state == States.PrepShooting)
         {
@@ -145,7 +179,7 @@ public class FuelHandler extends SubsystemBase
 
             // All game items gone? Keep spinner running to make sure
             // all items are really shot.
-            if (after_shot_delay.calculate(!storage_full))
+            if (after_shot_delay.calculate(!feeder_full))
                 state = States.Idle;
         }
 
@@ -155,24 +189,26 @@ public class FuelHandler extends SubsystemBase
         {
             intake.open(true);
             vis_intake.setAngle(-20);
-            vis_intake.setColor(blink_on_off ? BELT_ON : BELT_OFF);
+            vis_intake.setColor(blink_on_off ? MOVE_ON : MOVE_OFF);
         }
         else
         {
             intake.open(false);
             vis_intake.setAngle(90);
-            vis_intake.setColor(BELT_OFF);
+            vis_intake.setColor(MOVE_OFF);
         }
 
         if (run_storage)
         {
-            storage_mover.setVoltage(nt_belt_voltage.getDouble(0));
-            vis_storage.setColor(blink_on_off ? BELT_ON : BELT_OFF);
+            storage_mover.setVoltage(nt_storage_voltage.getDouble(0));
+            feeder.setVoltage(nt_feeder_voltage.getDouble(0));
+            vis_storage.setColor(blink_on_off ? MOVE_ON : MOVE_OFF);
         }
         else
         {
             storage_mover.setVoltage(0);
-            vis_storage.setColor(BELT_OFF);
+            feeder.setVoltage(0);
+            vis_storage.setColor(MOVE_OFF);
         }
 
         if (run_spinner  ||  nt_always_spin.getBoolean(false))

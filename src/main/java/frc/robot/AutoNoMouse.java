@@ -4,6 +4,7 @@
 package frc.robot;
 
 import static frc.tools.AutoTools.createTrajectory;
+import static frc.tools.AutoTools.followPathWeaver;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -21,7 +23,6 @@ import frc.swervelib.RotateToHeadingCommand;
 import frc.swervelib.SwerveDrivetrain;
 import frc.swervelib.SwerveToPositionCommand;
 import frc.swervelib.VariableWaitCommand;
-import frc.tools.AutoTools;
 import frc.tools.SequenceWithStart;
 
 /** Auto-no-mouse routines */
@@ -152,6 +153,52 @@ public class AutoNoMouse
             auto.addCommands(new AimToHub(tags, drivetrain).asProxy());
             auto.addCommands(new PrintCommand("Shoot!"));
             auto.addCommands(new WaitCommand(2));
+            auto.addCommands(new PrintCommand("Done."));
+            autos.add(auto);
+        }
+
+        {   // Red Bottom: Shoot, Pickup, Shoot
+            SequentialCommandGroup auto = new SequenceWithStart("RBSPS", 13.00, 1.67, 180);
+            auto.addCommands(new VariableWaitCommand());
+            auto.addCommands(new SelectAbsoluteTrajectoryCommand(drivetrain, 13.00, 1.67, 180));
+            // Move over to target
+            Trajectory path = createTrajectory(true, 13.00, 1.67, 68,
+                                                  13.64, 3.65, 92);
+            auto.addCommands(drivetrain.followTrajectory(path, 180).asProxy());
+            auto.addCommands(new AimToHub(tags, drivetrain).asProxy());
+            auto.addCommands(new PrintCommand("Shoot!"));
+            auto.addCommands(new WaitCommand(2));
+            // Pick up fuel from our side
+            path = createTrajectory(true,
+                                       13.64, 3.66, -44,
+                                       16.05, 2.09, 0);
+            auto.addCommands(
+                new ParallelCommandGroup(
+                    drivetrain.followTrajectory(path, 0).asProxy(),
+                    new WaitCommand(1.0).andThen(new PrintCommand("Open Intake"))
+                ));
+
+            auto.addCommands(new WaitCommand(0.5));
+            auto.addCommands(new PrintCommand("Close intake"));
+
+            path = createTrajectory(true,
+                                    16.05, 2.09, 142,
+                                    13.79, 3.87, 142);
+            auto.addCommands(drivetrain.followTrajectory(path, 180).asProxy());
+
+            // Aim and shoot
+            auto.addCommands(new AimToHub(tags, drivetrain).asProxy());
+            auto.addCommands(new PrintCommand("Shoot!"));
+            auto.addCommands(new WaitCommand(2));
+            auto.addCommands(new PrintCommand("Done."));
+            autos.add(auto);
+        }
+
+        {   // Pathweaver example
+            SequentialCommandGroup auto = new SequenceWithStart("Tour", 4.04, 7.440,-180);
+            auto.addCommands(new VariableWaitCommand());
+            auto.addCommands(new SelectAbsoluteTrajectoryCommand(drivetrain, 4.04, 7.44, -180));
+            auto.addCommands(followPathWeaver(drivetrain, "Tour", 0).asProxy());
             auto.addCommands(new PrintCommand("Done."));
             autos.add(auto);
         }
