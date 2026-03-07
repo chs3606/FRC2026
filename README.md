@@ -2,7 +2,7 @@
 ## Season 2026
 
 From Baton Rouge Louisiana, Bear Metal has been competiting in FRC since 2011.
-Original code forked from Knoxville, Tennessee's Team 2393 from [Knoxville Catholic High School](https://knoxvillecatholic.com)
+Original code forked from Knoxville, Tennessee's Team 3606 from [Knoxville Catholic High School](https://knoxvillecatholic.com)
 
 ## Programming Agenda
 
@@ -21,7 +21,7 @@ Original code forked from Knoxville, Tennessee's Team 2393 from [Knoxville Catho
   then
   `git pull origin main`
 
-Team 2393 FRC Season 2026
+Team 3606 FRC Season 2026
 =========================
 
 ![logo](logo.jpg)
@@ -43,7 +43,7 @@ Other links:
 Get robot code
 --------------
  * Start "WPILib VS Code". Invoke "View", "Command Palette...", "Git clone".
-   Enter the URL `https://github.com/team2393/FRC2026.git`.
+   Enter the URL `https://github.com/team3606/FRC2026.git`.
    For a target location, create a folder "git" in your home directory
    and place the git clone there. Select "Open" when then asked to open
    what you just fetched from git.
@@ -126,7 +126,7 @@ See https://docs.photonvision.org/en/latest/docs/quick-start/index.html
  * Use etcher or raspberry tool to write memory card
  * Connect Pi to robot network
  * Access from laptop as http://photonvision.local:5800
- * Under "Settings", set Team Number to 2393
+ * Under "Settings", set Team Number to 3606
  * Change IP Assignment Mode from DHCP to Static,
    set address to `10.23.93.12` and cameran name to `Front`
    respectively   `10.23.93.13` and `Back`.

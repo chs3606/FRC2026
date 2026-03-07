@@ -1,4 +1,4 @@
-// Copyright (c) FIRST Team 2393 and other WPILib contributors.
+// Copyright (c) FIRST Team 3606 and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
@@ -44,8 +44,8 @@ public class RobotMap
     public static final int INTAKE_MOVER = 15;
     public static final int STOREAGE_MOVER = 9;
     public static final int FEEDER = 14;
-    public static final int SPINNER = 12;
-    public static final int SPINNER2 = 13;
+    public static final int SPINNER = 4;
+    public static final int SPINNER2 = 7;
 
     // DIO channels
     public static final int HOOD_HOME = 2;

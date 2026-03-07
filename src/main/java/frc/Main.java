@@ -1,4 +1,4 @@
-// Copyright (c) FIRST team 2393 and other WPILib contributors.
+// Copyright (c) FIRST team 3606 and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
@@ -25,8 +25,8 @@ public final class Main
                                                                                             //  0.0)));
 
       // RobotBase.startRobot(frc.demo.DigitalFilterDemoRobot::new);
-      RobotBase.startRobot(frc.robot.SpinnerTestRobot::new);
-      // RobotBase.startRobot(frc.robot.IntakeTestRobot::new);
+      // RobotBase.startRobot(frc.robot.SpinnerTestRobot::new);
+      RobotBase.startRobot(frc.robot.IntakeTestRobot::new);
       // RobotBase.startRobot(frc.robot.FuelHandlerTestRobot::new);
       // RobotBase.startRobot(frc.robot.StorageOrFeederTestRobot::new);
       // RobotBase.startRobot(frc.robot.TunePlayerRobot::new);

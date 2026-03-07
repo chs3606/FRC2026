@@ -1,4 +1,4 @@
-// Copyright (c) FIRST Team 2393 and other WPILib contributors.
+// Copyright (c) FIRST Team 3606 and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
@@ -15,6 +15,9 @@ public class IntakeTestRobot extends CommandRobotBase
 
     public IntakeTestRobot()
     {
+        
+    SmartDashboard.putNumber("Spinner 1 Voltage", 3);
+    SmartDashboard.putNumber("Spinner 2 Voltage", 3);
         power_dist.clearStickyFaults();
         SmartDashboard.putData("Power", power_dist);
     }
@@ -22,12 +25,13 @@ public class IntakeTestRobot extends CommandRobotBase
     @Override
     public void teleopPeriodic()
     {
-        intake.open(RobotOI.joystick.a().getAsBoolean());
+        intake.spin();
+        // intake.open(RobotOI.joystick.a().getAsBoolean());
     }
 
     @Override
     public void autonomousPeriodic()
     {
-        intake.open(true);
+        // intake.open(true);
     }
 }

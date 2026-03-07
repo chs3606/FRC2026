@@ -1,4 +1,4 @@
-// Copyright (c) FIRST Team 2393 and other WPILib contributors.
+// Copyright (c) FIRST Team 3606 and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
@@ -97,8 +97,8 @@ public class Robot extends CommandRobotBase
         }
         ));
 
-        RobotOI.joystick.a().whileTrue(new InstantCommand(() -> intake.open(true)));
-        RobotOI.joystick.a().whileFalse(new InstantCommand(() -> intake.open(false)));
+        // RobotOI.joystick.a().whileTrue(new InstantCommand(() -> intake.open(true)));
+        // RobotOI.joystick.a().whileFalse(new InstantCommand(() -> intake.open(false)));
         RobotOI.joystick.leftBumper().onTrue(new InstantCommand(()->
         {
             drivetrain.setDefaultCommand(joydrive);

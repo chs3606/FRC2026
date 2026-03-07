@@ -1,4 +1,4 @@
-// Copyright (c) FIRST Team 2393 and other WPILib contributors.
+// Copyright (c) FIRST Team 3606 and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
@@ -114,7 +114,7 @@ public class Spinner extends SubsystemBase
         nt_current.setNumber(current);
         nt_change.setNumber(change);
 
-        // See https://github.com/team2393/FRC2022/blob/main/src/main/java/frc/robot/cargo/Spinner.java
+        // See https://github.com/team3606/FRC2022/blob/main/src/main/java/frc/robot/cargo/Spinner.java
         // ejected = delay.compute(remember_shot.compute(Math.abs(change) > 10.0));
     }
 

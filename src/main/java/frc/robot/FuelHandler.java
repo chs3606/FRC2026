@@ -1,4 +1,4 @@
-// Copyright (c) FIRST Team 2393 and other WPILib contributors.
+// Copyright (c) FIRST Team 3606 and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
@@ -187,13 +187,13 @@ public class FuelHandler extends SubsystemBase
 
         if (run_intake)
         {
-            intake.open(true);
+            // intake.open(true);
             vis_intake.setAngle(-20);
             vis_intake.setColor(blink_on_off ? MOVE_ON : MOVE_OFF);
         }
         else
         {
-            intake.open(false);
+            // intake.open(false);
             vis_intake.setAngle(90);
             vis_intake.setColor(MOVE_OFF);
         }

@@ -1,4 +1,4 @@
-// Copyright (c) FIRST Team 2393 and other WPILib contributors.
+// Copyright (c) FIRST Team 3606 and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
@@ -68,6 +68,8 @@ public class MotorHelper
      *  @param ramp_up_secs How long to delay ramp-up
      *  @return {@link SparkMax}
      */
+
+     // TODO UPDATE:
     public static SparkMax createSparkMax(int can_id, final boolean invert, boolean brake, double ramp_up_secs)
     {
         SparkMaxConfig config = new SparkMaxConfig();
