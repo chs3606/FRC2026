@@ -2,7 +2,9 @@
 ## Season 2026
 
 From Baton Rouge Louisiana, Bear Metal has been competiting in FRC since 2011.
-Original code forked from Knoxville, Tennessee's Team 3606 from [Knoxville Catholic High School](https://knoxvillecatholic.com)
+Original code forked from Knoxville, Tennessee's Team 2393 from [Knoxville Catholic High School](https://knoxvillecatholic.com)
+(Apologies to their team, our read me displayed our team number due to misconfigured regex)
+
 
 ## Programming Agenda
 
