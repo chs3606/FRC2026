@@ -31,9 +31,7 @@ public class Intake extends SubsystemBase
   // Pneumatic cylinder to push intake down/out
 //   private final Solenoid in_out;
   // Spinner to pull game piece in
-  private final SparkMax spinner, spinner2;
-//   private final SparkBaseConfig base_config;
-  private final SparkMaxConfig spinner_config, spinner2_config;
+ 
 //   private final RelativeEncoder encoder;
 //   private final NetworkTableEntry nt_rpm;
   // Simulation display elements
@@ -44,34 +42,15 @@ public class Intake extends SubsystemBase
 
   // Reverse intake spinner to eject game piece?
 //   private boolean reverse = false;
-
+  SparkMax[] motors = new SparkMax[2];
   @SuppressWarnings("removal")
 public Intake()
   {
     // We want REVPH, but only CTREPCM supports simulation...
     // in_out = new Solenoid(PneumaticsModuleType.REVPH, RobotMap.INTAKE_IN_OUT);
     // spinner = new CANSparkMax(RobotMap.INTAKE_SPINNER, MotorType.kBrushless);
-    spinner = new SparkMax(RobotMap.SPINNER, MotorType.kBrushed);
-    spinner_config = new SparkMaxConfig();
-
-    spinner2 = new SparkMax(RobotMap.SPINNER2, MotorType.kBrushed);
-    spinner2_config = new SparkMaxConfig();
-    spinner_config
-    .inverted(true)
-    .idleMode(IdleMode.kCoast);
-    ;
- spinner.clearFaults();
-    spinner.configure(spinner_config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-
-    spinner2_config
-    .inverted(true)
-    .idleMode(IdleMode.kCoast);
-    // .follow(spinner);
-
-    spinner2.configure(spinner2_config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-    
+    motors[0] = MotorHelper.createSparkMax(4, false, false, 0, true);
+    motors[1] = MotorHelper.createSparkMax(7, false, false, 0, true);
     // spinner.restoreFactoryDefaults();
     // spinner.setSmartCurrentLimit(50, 50);
     // spinner.clearFaults();
@@ -142,12 +121,19 @@ public Intake()
     // else
     //   angle += (desired_angle - angle) * 0.05;
     // pivot.setAngle(angle);
-   public void spin(){
-    
-    spinner.setVoltage(SmartDashboard.getNumber("Spinner 1 Voltage", 1));
-    spinner2.setVoltage(SmartDashboard.getNumber("Spinner 2 Voltage", 1));
-   SmartDashboard.putNumber("Volt 1", spinner.getBusVoltage());
-    SmartDashboard.putNumber("Volt 2", spinner2.getBusVoltage());
+   public void spin(double[] voltages){
+    int index = 0; 
+    for (SparkMax motor : motors){
+     index++;
+    //  double volt = SmartDashboard.getNumber("Spinner " + index + " Voltage", 1);
+    double volt = voltages[index];
+     motor.setVoltage(volt);
+     System.out.println(volt);
+    }
+  //   spinner.setVoltage(SmartDashboard.getNumber("Spinner 1 Voltage", 1));
+  //   spinner2.setVoltage(SmartDashboard.getNumber("Spinner 2 Voltage", 1));
+  //  SmartDashboard.putNumber("Volt 1", spinner.getBusVoltage());
+  //   SmartDashboard.putNumber("Volt 2", spinner2.getBusVoltage());
   }
 
     

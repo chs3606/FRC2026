@@ -5,6 +5,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.tools.CommandRobotBase;
 
 /** Test the intake */
@@ -12,7 +13,8 @@ public class IntakeTestRobot extends CommandRobotBase
 {
     private final PowerDistribution power_dist = new PowerDistribution();
     private final Intake intake = new Intake();
-
+    private final double intakeVoltages[] = {0, 4.5}; // voltages for intaking to hopper, 0 = Motor 4, 1 = Motor 7 (?)
+    private final double shooterVoltages[] = {4.5, -7.5}; // voltages for shooting
     public IntakeTestRobot()
     {
         
@@ -25,7 +27,14 @@ public class IntakeTestRobot extends CommandRobotBase
     @Override
     public void teleopPeriodic()
     {
-        intake.spin();
+        boolean isIntake = RobotOI.intake();
+        boolean isShooter = RobotOI.shooter();
+        if(isIntake){
+            intake.spin(intakeVoltages);
+        }else if(isShooter){
+            intake.spin(shooterVoltages);
+        }
+        
         // intake.open(RobotOI.joystick.a().getAsBoolean());
     }
 

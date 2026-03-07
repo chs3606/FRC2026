@@ -70,14 +70,20 @@ public class MotorHelper
      */
 
      // TODO UPDATE:
-    public static SparkMax createSparkMax(int can_id, final boolean invert, boolean brake, double ramp_up_secs)
+    public static SparkMax createSparkMax(int can_id, final boolean invert, boolean brake, double ramp_up_secs, boolean isBrushed)
     {
+        MotorType motorType;
+        if(isBrushed){
+            motorType = MotorType.kBrushed;
+        }else{
+            motorType = MotorType.kBrushless;
+        }
         SparkMaxConfig config = new SparkMaxConfig();
         config.inverted(invert);
         config.idleMode(brake ? IdleMode.kBrake : IdleMode.kCoast);
         config.openLoopRampRate(ramp_up_secs);
 
-        SparkMax motor = new SparkMax(can_id, MotorType.kBrushless);
+        SparkMax motor = new SparkMax(can_id, motorType);
         motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         return motor;
