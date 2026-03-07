@@ -8,11 +8,18 @@ Original code forked from Knoxville, Tennessee's Team 2393 from [Knoxville Catho
 
 ## Programming Agenda
 
+### March
+- Robotttt
+- Autonomous time now babyyy
+- wait for mechanical to get done (pls God help them get it done before comp)
+- Partyyyyy
+- meow
+
 ### Week of 1/20/2026
-- Stay up to date (see update instructions below!!)
+~~- Stay up to date (see update instructions below!!)~~
 
 ### Week of 1/11/2026
-- Brain Storm ideas for this years game and place in simulation
+~~- Brain Storm ideas for this years game and place in simulation~~
 - ~~Setup laptops~~
 - Stay Up-to-date (git pull EVERY SESSION)
 - Have fun and learn
