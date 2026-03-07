@@ -5,6 +5,17 @@ From Baton Rouge Louisiana, Bear Metal has been competiting in FRC since 2011.
 Original code forked from Knoxville, Tennessee's Team 2393 from [Knoxville Catholic High School](https://knoxvillecatholic.com)
 (Apologies to their team, our read me displayed our team number due to misconfigured regex)
 
+## TODO:
+We actually have stuff to do
+- Calibrate swerve motors to accurately read Meters/Sec
+- Test and setup CAN ids
+- Calibrate intake/shooter setpoints
+- -> (opt.) instead of using voltages for that, let's maybe do it 'correctly' and calculate PID? so we can do shooter speed setpoints
+- Incorporate NavX board (I think i did it?)
+- Drive, drive, drive!!!
+- Setup and decide controller layout
+- 
+
 
 ## Programming Agenda
 
