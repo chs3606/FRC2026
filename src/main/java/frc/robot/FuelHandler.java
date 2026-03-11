@@ -42,7 +42,7 @@ import frc.tools.KeepOnFilter;
  */
 public class FuelHandler extends SubsystemBase
 {
-    private final Intake intake = new Intake();
+    private final Combo intake = new Combo();
     // At 5V, mechanism uses ~20 amp. With balls, it runs up to ~30
     private final TalonFX storage_mover = MotorHelper.createTalonFX(RobotMap.STOREAGE_MOVER, false, true, 0, 30.0);
     private final TalonFX feeder = MotorHelper.createTalonFX(RobotMap.FEEDER, false, true, 0, 30.0);

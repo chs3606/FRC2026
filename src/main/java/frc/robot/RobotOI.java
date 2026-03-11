@@ -10,11 +10,11 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotOI extends SwerveOI
 {
     public static final CommandXboxController joystick = new CommandXboxController(0);
-    public static boolean intake(){
-        return joystick.a().getAsBoolean();
+    public static Trigger intake(){
+        return joystick.y();
     }
 
-    public static boolean shooter(){
-        return joystick.b().getAsBoolean();
+    public static Trigger shooter(){
+        return joystick.b();
     }
 }

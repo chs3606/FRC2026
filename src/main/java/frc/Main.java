@@ -5,6 +5,7 @@
 package frc;
 
 import edu.wpi.first.wpilibj.RobotBase;
+import frc.robot.Robot;
 
 /** Java 'Main'. Modify this file to select which robot to run */
 public final class Main
@@ -26,7 +27,7 @@ public final class Main
 
       // RobotBase.startRobot(frc.demo.DigitalFilterDemoRobot::new);
       // RobotBase.startRobot(frc.robot.SpinnerTestRobot::new);
-      RobotBase.startRobot(frc.robot.IntakeTestRobot::new);
+      // RobotBase.startRobot(frc.robot.IntakeTestRobot::new);
       // RobotBase.startRobot(frc.robot.FuelHandlerTestRobot::new);
       // RobotBase.startRobot(frc.robot.StorageOrFeederTestRobot::new);
       // RobotBase.startRobot(frc.robot.TunePlayerRobot::new);
@@ -34,6 +35,7 @@ public final class Main
       // RobotBase.startRobot(frc.robot.ArmTestRobot::new);
       // RobotBase.startRobot(frc.robot.HoodDemoRobot::new);
 
+      RobotBase.startRobot(frc.robot.ComboTestRobot::new);
       // RobotBase.startRobot(frc.robot.Robot::new);
   }
 }

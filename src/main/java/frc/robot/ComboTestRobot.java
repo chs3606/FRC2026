@@ -9,31 +9,24 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.tools.CommandRobotBase;
 
 /** Test the intake */
-public class IntakeTestRobot extends CommandRobotBase
+public class ComboTestRobot extends CommandRobotBase
 {
     private final PowerDistribution power_dist = new PowerDistribution();
-    private final Intake intake = new Intake();
-    private final double intakeVoltages[] = {0, 4.5}; // voltages for intaking to hopper, 0 = Motor 4, 1 = Motor 7 (?)
-    private final double shooterVoltages[] = {4.5, -7.5}; // voltages for shooting
-    public IntakeTestRobot()
+    private final Combo combo = new Combo();
+   
+    public ComboTestRobot()
     {
         
-    SmartDashboard.putNumber("Spinner 1 Voltage", 3);
-    SmartDashboard.putNumber("Spinner 2 Voltage", 3);
-        power_dist.clearStickyFaults();
-        SmartDashboard.putData("Power", power_dist);
+       
+        RobotOI.joystick.y().whileTrue(combo.runIntake());
+        RobotOI.joystick.a().whileTrue(combo.runClear());
+        RobotOI.joystick.b().whileTrue(combo.runShooter());
     }
 
     @Override
     public void teleopPeriodic()
     {
-        boolean isIntake = RobotOI.intake();
-        boolean isShooter = RobotOI.shooter();
-        if(isIntake){
-            intake.spin(intakeVoltages);
-        }else if(isShooter){
-            intake.spin(shooterVoltages);
-        }
+        
         
         // intake.open(RobotOI.joystick.a().getAsBoolean());
     }

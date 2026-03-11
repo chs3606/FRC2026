@@ -50,7 +50,8 @@ public class Robot extends CommandRobotBase
 
     // TODO Eventually, use FuelHandler. For now preliminary Intake
     // private final FuelHandler fuel_handler = new FuelHandler();
-    private final Intake intake = new Intake();
+    // private final Intake intake = new Intake();
+    private final Combo combo = new Combo(); 
 
     /** Handle cameras */
     private final List<CameraHelper> cameras = List.of(
@@ -83,7 +84,8 @@ public class Robot extends CommandRobotBase
                                                                            SwerveDrivetrain.MAX_METERS_PER_SEC));
 
         // Bind controller buttons
-        RobotOI.joystick.x().whileTrue(aim.repeatedly());
+        RobotOI.joystick.x().whileTrue(combo.runIntake());
+        
         // RobotOI.joystick.a().onTrue(fuel_handler.toggleIntake());
         // RobotOI.joystick.y().onTrue(fuel_handler.shoot());
         // Helper for creating auto paths: Print X, Y, Heading on button press
